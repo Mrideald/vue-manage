@@ -17,15 +17,19 @@ export const getUser = (params) => {
 
 export const addUser = (data) => {
   //新增用户
-  return mockRequest.post({ path: "/user/add", data: data });
+  return mockRequest.post('/user/add',data);
 };
 export const editUser = (data) => {
     //编辑用户
-    return mockRequest.post({ path: "/user/edit", data: data });
+    return mockRequest.post("/user/edit",data );
   };
 
   export const delUser = (data) => {
     //删除用户
-    return mockRequest.post({ path: "/user/del", data: data });
+    return mockRequest.post("/user/del",data );
   };
 
+  //登录接口 换成对象形式写一下
+export const getMenu=(data)=>{
+  return mockRequest.post('/permission/getMenu',data)
+}

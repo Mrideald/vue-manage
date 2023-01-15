@@ -1,20 +1,30 @@
 <template>
   <div class="header-container">
     <div class="l-content">
-      <el-button style="margin-right:20px" icon="el-icon-menu" size="mini" @click="backMenu"></el-button>
+      <el-button
+        style="margin-right: 20px"
+        icon="el-icon-menu"
+        size="mini"
+        @click="backMenu"
+      ></el-button>
       <!-- 面包屑 -->
       <el-breadcrumb separator="/">
-        <el-breadcrumb-item v-for="(item,index) in tabsList" :key="index" :to="{ path: item.path }">{{ item.label }}</el-breadcrumb-item>
+        <el-breadcrumb-item
+          v-for="(item, index) in tabsList"
+          :key="index"
+          :to="{ path: item.path }"
+          >{{ item.label }}</el-breadcrumb-item
+        >
       </el-breadcrumb>
     </div>
     <div class="r-content">
-      <el-dropdown>
+      <el-dropdown @command="handleCommand">
         <span class="el-dropdown-link">
           <img class="imgUser" src="@/assets/images/user.png" alt="renwu" />
         </span>
         <el-dropdown-menu slot="dropdown">
           <el-dropdown-item>个人中心</el-dropdown-item>
-          <el-dropdown-item>退出</el-dropdown-item>
+          <el-dropdown-item command="cancel">退出</el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
     </div>
@@ -22,7 +32,8 @@
 </template>
 
 <script>
-import { mapState } from 'vuex';
+import { mapState } from "vuex";
+import Cookie from "js-cookie";
 export default {
   name: "VueManageCommonHeader",
 
@@ -34,13 +45,20 @@ export default {
     backMenu() {
       this.$store.dispatch("changeCollapseMenu");
     },
+    //退出
+    handleCommand(command) {
+      if (command === "cancel") {
+        Cookie.remove("token");
+        this.$router.push({path:'/login'})
+      }
+    },
   },
-  computed:{
+  computed: {
     //vuex区
 
     //获取面包屑数据
-    ...mapState("tab",["tabsList"])
-  }
+    ...mapState("tab", ["tabsList"]),
+  },
 };
 </script>
 
@@ -63,23 +81,22 @@ export default {
     height: 40px;
     border-radius: 50%;
   }
-  .l-content{
+  .l-content {
     display: flex;
     align-items: center;
-    /deep/.el-breadcrumb__item{
-    .el-breadcrumb__inner{
-      font-weight: normal;
-        &.is-link{
+    /deep/.el-breadcrumb__item {
+      .el-breadcrumb__inner {
+        font-weight: normal;
+        &.is-link {
           color: #666;
         }
-    }
-    &:last-child{
-      .el-breadcrumb__inner{
-        color: #fff;
+      }
+      &:last-child {
+        .el-breadcrumb__inner {
+          color: #fff;
+        }
       }
     }
   }
-  }
-
 }
 </style>

@@ -36,7 +36,41 @@ var users = [
 //indexOf得到指定索引，后面跟删除元素个数，包括此索引的数
 tabsList.splice(tabsList.indexOf(val),1)
 console.log(tabsList,val.name)
+12.box-sizing理解
+盒子模型是指：外边距（margin）+ border（边框） + 内边距（padding）+ content（内容）可以把每一个容器，比如div，都看做是一个盒子模型
+比如你给一个div设置宽高为500px，但实际你设置的只是content，之后你又设置了padding:10px;border:1px solid red;
+这时div的宽高就会变为544px（content 500px + padding 40px + border 4px）
+相当于一个元素的实际宽高是由：　padding + border + content 组成
+1、没有设置box-sizing:border-box属性，宽高会加上padding和border的值，需要我们手动去计算，减去padding和border的值，并调整content的值，以免超过给定的宽高
+2、加了box-sizing:border-box属性，padding和border的值就不会在影响元素的宽高，相当于把padding和border的值都算在content里
+盒子模型会自动根据padding和border的值来调整content的值，就不需要手动调整
+
+13.Cookie或者local storage中存对象注意点
+这俩里面只能存字符串 如果存对象就会在游览器里面存成Object和Object 方法：存的时候用JSON.stringify(val)转化对象val  用的时候用JSON.parse(存的名字)
+
+14.页面刷新时vuex里面的数据会渲染不上去，可以将数据存在cookie或者游览器本地存储
 ~~~
+
+# 错误记录
+
+~~~error
+1. relativeURL.replace is not a function
+这个错误是api里面地址写的有问题
+api里面写请求的方法目前靠这俩项目学到了俩种写法
+1.尚硅谷的
+export const reqGetCode=(phone)=>requests({url:`/user/passport/sendCode/${phone}`,method:'get'})
+这个requests就是二次封装的axios 
+2.后台管理
+export const addUser = (data) => {
+  //新增用户
+  return mockRequest.post('/user/add',data);
+};
+这是返回请求的数据,请求方式直接卸载封装的axios后面
+3.[vuex]unknown action type: setMenu
+因为命名空间导致的路径问题  如果写了命名空间，那么要加文件名/actions下面的方法 这是写dispatch的时候反正就是写方法的时候，使用的时候    ...mapState("tab", ["tabsList"]),
+~~~
+
+
 
 
 
@@ -651,3 +685,83 @@ getData().then(({ data }) => {
   }
 ~~~
 
+# 登录页面的路由守卫编写(token)
+
+## 生成随机数
+
+1. uuid生成全球唯一随机数（npm i uuid）
+
+   ~~~
+   import (v4 as uuidv4) from 'uuid'
+   
+   //如果是正常项目一般要封装uuid 这边粗略了
+   const token=uuidv4();
+   console.log(token) //token:70773b98-e28e-4854-998e-51fb537fd0eb
+   ~~~
+
+   
+
+2. Mock.Random.guid()生成随机数
+
+   ~~~
+   // 得到一段随机数
+   const token=Mock.Random.guid();
+   console.log(token) //token:4E8d5c3B-44c3-33FE-63Ed-f0D91BbadBBc
+   ~~~
+
+   
+
+## 生成后存储在cookie中 也可以存储在本地local storage或者会话存储什么的
+
+~~~
+npm i js-cookie
+
+import Cookie from 'js-cookie'
+
+Cookie.set('token',token)
+~~~
+
+## 编写跳转
+
+~~~
+// 登录
+submit(){
+// 得到一段随机数
+// const token=Mock.Random.guid();
+// console.log(token) //token:4E8d5c3B-44c3-33FE-63Ed-f0D91BbadBBc
+//如果是正常项目一般要封装uuid 这边粗略了
+const token=uuidv4();
+//console.log(token) //token:70773b98-e28e-4854-998e-51fb537fd0eb
+//将token信息存入cookie用不不同页面通信
+Cookie.set('token',token)
+this.$router.push({path:'/home'})}
+~~~
+
+## 编写路由守卫
+
+~~~
+//全局前置路由守卫
+Router.beforeEach((to,from,next)=>{
+ //判断token存不存在
+ const token=Cookie.get('token')
+ //token不存在说明当前用户是未登录，应该跳转至登录页
+ if(!token&&to.name!=='login'){
+  next({name:'login'})
+ }
+//  如果token存在 说明已经登录 返回原来的地方
+ else if(token&&to.name==='login'){
+  next({name:from.name})
+ }else{
+  // 其他所有情况放行
+  next()
+ }
+})
+~~~
+
+这是在route.js的index.js下写的全局守卫
+
+
+
+# 编写动态路由 根据业务需求
+
+未完成 网课好像也没实现这个逻辑 代码可参考

@@ -12,5 +12,9 @@ Vue.config.productionTip = false
 Vue.use(ElementUI);
 new Vue({
   render: h => h(App),
-  router,store,mock
+  router,store,mock,
+  //防止刷新之后找不到vuex中的router动态获取 页面刷新之后所有的都要初始化
+  created(){
+    store.dispatch('tab/addMenu',router)
+  }
 }).$mount('#app')

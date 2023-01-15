@@ -1,3 +1,4 @@
+import Cookie from "js-cookie";
 const actions = {
   //菜单收缩
   changeCollapseMenu(context) {
@@ -7,6 +8,14 @@ const actions = {
   selectMenu(context, menuItem) {
     context.commit("SELECTMENU", menuItem);
   },
+  //动态获取菜单数据 根据不同的用户登录返回不同的菜单数据
+  setMenu(context,menu){
+    context.commit("SETMENU",menu)
+  },
+  //动态路由
+  addMenu(context,router){
+    context.commit("ADDMENU",router)
+  }
 };
 
 const mutations = {
@@ -24,6 +33,36 @@ const mutations = {
     }
     //如果存在则不进行任何操作
   }
+  },
+  SETMENU(state,val){
+    state.menuData=val
+    Cookie.set('menuData',JSON.stringify(val))
+  },
+  ADDMENU(state,router){
+    //判断缓存是否有数据
+    if(!Cookie.get('menuData')) return
+    const menu=JSON.parse(Cookie.get('menuData'))
+    state.menu=menu
+    //组装动态路由的数据
+    const menuArray=[]
+    menu.forEach(item=>{
+      //如果有子路由
+      if(item.children){
+        item.children.map(item=>{
+          item.component=()=>import(`../pages/${item.url}`)
+          return item
+        })
+        menuArray.push(...item.children)
+      }else{
+        item.component=()=>import(`../pages/${item.url}`)
+        menuArray.push(item)
+      }
+    })
+    //路由的动态添加
+    menuArray.forEach(item=>{
+      //添加路由 ，第一个是主路由
+      router.addRoute('Main',item)
+    })
   }
 };
 
@@ -38,6 +77,7 @@ const state = {
       url: "Home/Home",
     },
   ], //面包屑
+  menuData:[]
 };
 
 const getters = {};
